@@ -46,7 +46,20 @@ fn main() {
         color: [0.0, 1.0, 0.0, 1.0],
     };
 
-    let vertices = [default_vertex, default_vertex, default_vertex];
+    let vertices = [
+        Vertex {
+            pos: [0.0, 0.5],
+            color: [1.0, 0.0, 0.0, 1.0],
+        },
+        Vertex {
+            pos: [0.5, 0.0],
+            color: [0.0, 1.0, 0.0, 1.0],
+        },
+        Vertex {
+            pos: [0.0, -0.5],
+            color: [0.0, 0.0, 1.0, 1.0],
+        }
+    ];
     let indices = [0u16, 1, 2];
 
     let vertex_buffer = factory.create_vertex_buffer(&vertices);
@@ -57,7 +70,7 @@ fn main() {
         scale: [scale/(size_in_pixels.0 as f32), scale/(size_in_pixels.1 as f32)],
     };
 
-    let index_buffer = factory.create_buffer_immutable(&indices, gfx::buffer::Role::Index, gfx::Bind::empty()).unwrap();
+    let index_buffer = factory.create_buffer_const(&indices, gfx::BufferRole::Index, gfx::Bind::empty()).unwrap();
 
     let slice = gfx::Slice {
         start: 0,
@@ -82,11 +95,11 @@ fn main() {
 
         encoder.update_buffer(&data.vertex_buffer, &vertices, 0).unwrap();
 
-        data.displacement = [-1.0, 1.0];
-        data.scale = [2.0/(size_in_pixels.0 as f32), -2.0/(size_in_pixels.1 as f32)];
+        data.displacement = [0.0, 0.0];
+        data.scale = [1.0, 1.0];
 
         // draw a frame
-        encoder.clear(&data.out, [0.5, 0.5, 0.5, 1.0]);
+        encoder.clear(&data.out, [0.0, 0.0, 0.0, 1.0]);
         encoder.draw(&slice, &pso, &data);
         encoder.flush(&mut device);
         window.swap_buffers().unwrap();
