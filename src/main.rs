@@ -17,8 +17,6 @@ gfx_defines!{
     pipeline pipe {
         vertex_buffer: gfx::VertexBuffer<Vertex> = (),
         out: gfx::RenderTarget<ColorFormat> = "pixel",
-        displacement: gfx::Global<[f32; 2]> = "displacement",
-        scale: gfx::Global<[f32; 2]> = "scale",
     }
 }
 
@@ -38,15 +36,7 @@ fn main() {
         pipe::new()
     ).unwrap();
 
-    let mut size_in_pixels = (w, h);
-    let scale = 30.0;
-
-    let default_vertex = Vertex {
-        pos: [0.0, 0.0],
-        color: [0.0, 1.0, 0.0, 1.0],
-    };
-
-    let vertices = [
+    let mut vertices = [
         Vertex {
             pos: [0.0, 0.5],
             color: [1.0, 0.0, 0.0, 1.0],
@@ -66,11 +56,10 @@ fn main() {
     let mut data = pipe::Data {
         vertex_buffer: vertex_buffer,
         out: main_color,
-        displacement: [0.0, 0.0],
-        scale: [scale/(size_in_pixels.0 as f32), scale/(size_in_pixels.1 as f32)],
     };
 
-    let index_buffer = factory.create_buffer_const(&indices, gfx::BufferRole::Index, gfx::Bind::empty()).unwrap();
+    //let index_buffer = factory.create_buffer_const(&indices, gfx::BufferRole::Index, gfx::Bind::empty()).unwrap();
+    let index_buffer = factory.create_buffer_immutable(&indices, gfx::buffer::Role::Index, gfx::Bind::empty()).unwrap();
 
     let slice = gfx::Slice {
         start: 0,
@@ -80,23 +69,29 @@ fn main() {
         buffer: gfx::IndexBuffer::Index16(index_buffer),
     };
 
+    let start_time = std::time::Instant::now();
+
     'main: loop {
         // loop over events
         for event in window.poll_events() {
             match event {
-                glutin::Event::Resized(w, h) => {
+                glutin::Event::Resized(_, _) => {
                     gfx_window_glutin::update_views(&window, &mut data.out, &mut main_depth);
-                    size_in_pixels = (w as i32, h as i32);
                 }
                 glutin::Event::Closed => break 'main,
                 _ => {},
             }
         }
 
-        encoder.update_buffer(&data.vertex_buffer, &vertices, 0).unwrap();
+        let elapsed = std::time::Instant::now() - start_time;
+        let elapsed = (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64)*0.000000001;
 
-        data.displacement = [0.0, 0.0];
-        data.scale = [1.0, 1.0];
+        for i in 0..3 {
+            let a = (i as f64)*std::f64::consts::PI*2.0/3.0 + elapsed;
+            vertices[i].pos = [a.cos() as f32, a.sin() as f32];
+        }
+
+        encoder.update_buffer(&data.vertex_buffer, &vertices, 0).unwrap();
 
         // draw a frame
         encoder.clear(&data.out, [0.0, 0.0, 0.0, 1.0]);
