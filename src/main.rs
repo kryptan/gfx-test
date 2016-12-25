@@ -58,8 +58,8 @@ fn main() {
         out: main_color,
     };
 
-    //let index_buffer = factory.create_buffer_const(&indices, gfx::BufferRole::Index, gfx::Bind::empty()).unwrap();
-    let index_buffer = factory.create_buffer_immutable(&indices, gfx::buffer::Role::Index, gfx::Bind::empty()).unwrap();
+    let index_buffer = factory.create_buffer_const(&indices, gfx::BufferRole::Index, gfx::Bind::empty()).unwrap();
+    //let index_buffer = factory.create_buffer_immutable(&indices, gfx::buffer::Role::Index, gfx::Bind::empty()).unwrap();
 
     let slice = gfx::Slice {
         start: 0,
